@@ -1,55 +1,63 @@
 import type { JobAnalysis, MatchedProduct } from "@/types";
 
-interface ProductSearchResult {
-  url: string;
-  name: string;
-  description: string;
-  features: string[];
-  domain: string;
-  launched: string;
-}
+// Sample similar products database for common industries
+const KNOWN_PRODUCTS: Record<string, ProductSearchResult[]> = {
+  crm: [
+    { url: "https://hubspot.com", name: "HubSpot", description: "CRM platform for marketing, sales, and customer service", features: ["contact management", "email tracking", "deal pipeline"], domain: "crm" },
+    { url: "https://salesforce.com", name: "Salesforce", description: "Enterprise CRM with AI-powered insights", features: ["lead management", "analytics", "automation"], domain: "crm" },
+    { url: "https://pipedrive.com", name: "Pipedrive", description: "Sales CRM for small businesses", features: ["pipeline management", "activity tracking", "forecasting"], domain: "crm" },
+  ],
+  saas: [
+    { url: "https://notion.so", name: "Notion", description: "All-in-one workspace for notes and docs", features: ["wiki", "databases", "project management"], domain: "productivity" },
+    { url: "https://airtable.com", name: "Airtable", description: "Low-code platform for building collaborative apps", features: ["databases", "forms", "automations"], domain: "productivity" },
+    { url: "https://asana.com", name: "Asana", description: "Work management platform", features: ["tasks", "timelines", "portfolios"], domain: "project" },
+  ],
+  ai: [
+    { url: "https://openai.com", name: "OpenAI", description: "AI research and deployment company", features: ["GPT", "API", "playground"], domain: "ai" },
+    { url: "https://anthropic.com", name: "Anthropic", description: "AI safety company building Claude", features: ["Claude", "API", "constitutional AI"], domain: "ai" },
+    { url: "https://cohere.com", name: "Cohere", description: "Enterprise AI platform", features: ["LLM", "embeddings", "API"], domain: "ai" },
+  ],
+  ecommerce: [
+    { url: "https://shopify.com", name: "Shopify", description: "Ecommerce platform for online stores", features: ["storefront", "payments", "inventory"], domain: "ecommerce" },
+    { url: "https://woocommerce.com", name: "WooCommerce", description: "Ecommerce plugin for WordPress", features: ["store", "products", "payments"], domain: "ecommerce" },
+  ],
+  fintech: [
+    { url: "https://stripe.com", name: "Stripe", description: "Payment infrastructure platform", features: ["payments", "billing", "connect"], domain: "fintech" },
+    { url: "https://plaid.com", name: "Plaid", description: "Financial data platform", features: ["banking", "identity", "income"], domain: "fintech" },
+  ],
+  default: [
+    { url: "https://webflow.com", name: "Webflow", description: "Visual web development platform", features: ["CMS", "ecommerce", "memberships"], domain: "crm" },
+  ],
+};
 
 export async function findSimilarProducts(
   analysis: JobAnalysis,
-  searchFunction: (query: string) => Promise<ProductSearchResult[]>
+  maxResults: number = 3
 ): Promise<MatchedProduct[]> {
-  const searchQueries = [
-    `${analysis.projectType} software ${analysis.industry}`,
-    `${analysis.features[0]} tool SaaS`,
-    `${analysis.techStack[0]} dashboard`,
-    `${analysis.industry} ${analysis.projectType} startup`,
-  ];
-
-  const allResults: ProductSearchResult[] = [];
-
-  for (const query of searchQueries) {
-    try {
-      const results = await searchFunction(query);
-      allResults.push(...results);
-    } catch (error) {
-      console.error(`Search failed for query: ${query}`, error);
-    }
-  }
-
-  const uniqueResults = deduplicateProducts(allResults);
-
-  const scoredProducts = uniqueResults.map((product) => ({
-    ...product,
-    similarityScore: calculateSimilarityScore(product, analysis),
-  }));
-
-  scoredProducts.sort((a, b) => (b.similarityScore || 0) - (a.similarityScore || 0));
-
-  return scoredProducts.slice(0, 5).map((product) => ({
+  // Find products based on industry
+  const industryProducts = KNOWN_PRODUCTS[analysis.industry.toLowerCase()] || KNOWN_PRODUCTS[analysis.projectType.toLowerCase()] || KNOWN_PRODUCTS.default;
+  
+  const results = industryProducts.slice(0, maxResults).map((product) => ({
     id: crypto.randomUUID(),
     jobPostId: "",
     url: product.url,
     name: product.name,
     description: product.description,
     features: product.features,
-    similarityScore: product.similarityScore,
+    similarityScore: calculateSimilarityScore(product, analysis),
     createdAt: new Date(),
   }));
+
+  return results;
+}
+
+interface ProductSearchResult {
+  url: string;
+  name: string;
+  description: string;
+  features: string[];
+  domain: string;
+  launched?: string;
 }
 
 function deduplicateProducts(products: ProductSearchResult[]): ProductSearchResult[] {

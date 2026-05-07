@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-geist-sans: "Geist Sans", system-ui, sans-serif;
+  --font-geist-mono: "Geist Mono", monospace;
+  
+  --background: #0A0A0B;
+  --foreground: #FAFAFA;
+  
+  --card: #141416;
+  --card-foreground: #FAFAFA;
+  
+  --popover: #141416;
+  --popover-foreground: #FAFAFA;
+  
+  --primary: #6366F1;
+  --primary-foreground: #FAFAFA;
+  
+  --secondary: #1C1C1F;
+  --secondary-foreground: #A1A1AA;
+  
+  --muted: #1C1C1F;
+  --muted-foreground: #A1A1AA;
+  
+  --accent: #1C1C1F;
+  --accent-foreground: #FAFAFA;
+  
+  --destructive: #EF4444;
+  --destructive-foreground: #FAFAFA;
+  
+  --border: #27272A;
+  --input: #27272A;
+  --ring: #6366F1;
+  
+  --radius: 0.5rem;
+  
+  --success: #22C55E;
+  --warning: #F59E0B;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent;
+  }
+  
+  .glow {
+    @apply shadow-[0_0_20px_rgba(99,102,241,0.3)];
+  }
+  
+  .glow-hover {
+    @apply hover:shadow-[0_0_25px_rgba(99,102,241,0.4)];
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #141416;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272A;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3F3F46;
+}
+
+/* Selection */
+::selection {
+  background: rgba(99, 102, 241, 0.3);
+  color: #FAFAFA;
+}

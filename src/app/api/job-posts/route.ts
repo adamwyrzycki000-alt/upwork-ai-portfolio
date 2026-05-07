@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { analyzeJobPost } from "@/lib/ai/job-analyzer";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { content, url } = await request.json();
 
     if (!content) {
@@ -26,7 +19,7 @@ export async function POST(request: NextRequest) {
     // Create the job post and portfolio
     const jobPost = await prisma.jobPost.create({
       data: {
-        userId: session.user.id!,
+        userId: "demo-user", // For MVP without auth
         content,
         url,
         analysis: analysis as unknown as Record<string, unknown>,
@@ -35,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     const portfolio = await prisma.portfolio.create({
       data: {
-        userId: session.user.id!,
+        userId: "demo-user",
         jobPostId: jobPost.id,
         title: `${analysis.projectType} - ${analysis.industry} Portfolio`,
         sections: [],

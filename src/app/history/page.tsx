@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { Card, CardContent } from "@/components/ui";
@@ -9,16 +8,27 @@ import { Badge } from "@/components/ui";
 import {
   FileText,
   Clock,
-  TrendingUp,
   Loader2,
   Eye,
-  Download,
   Trash2,
+  Plus,
 } from "lucide-react";
 
+interface Portfolio {
+  id: string;
+  title: string;
+  createdAt: string;
+  jobPost?: {
+    analysis?: {
+      projectType?: string;
+      industry?: string;
+      techStack?: string[];
+    };
+  };
+}
+
 export default function HistoryPage() {
-  const { data: session } = useSession();
-  const [portfolios, setPortfolios] = useState<any[]>([]);
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,10 +46,8 @@ export default function HistoryPage() {
       }
     }
 
-    if (session) {
-      fetchPortfolios();
-    }
-  }, [session]);
+    fetchPortfolios();
+  }, []);
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this portfolio?")) return;
@@ -65,8 +73,11 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="min-h-screen p-6 lg:p-8">
       <div className="mb-8">
+        <Link href="/" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          ← Back to Home
+        </Link>
         <h1 className="mb-2 text-3xl font-bold">Portfolio History</h1>
         <p className="text-muted-foreground">
           View and manage your generated portfolios
@@ -82,7 +93,10 @@ export default function HistoryPage() {
               Create your first portfolio to get started
             </p>
             <Link href="/generate">
-              <Button>Create Portfolio</Button>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Create Portfolio
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -93,14 +107,13 @@ export default function HistoryPage() {
               <CardContent className="p-4">
                 <div className="mb-3 flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="mb-1 font-semibold">
+                    <h3 className="mb-1 font-semibold truncate">
                       {portfolio.title || "Untitled Portfolio"}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       {new Date(portfolio.createdAt).toLocaleDateString()}
                     </p>
                   </div>
-                  <Badge variant="secondary">{portfolio.template}</Badge>
                 </div>
                 <div className="mb-3 flex flex-wrap gap-2">
                   {portfolio.jobPost?.analysis?.techStack?.slice(0, 3)?.map(
@@ -112,7 +125,7 @@ export default function HistoryPage() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Link href={`/portfolio/${portfolio.id}`} className="flex-1">
+                  <Link href={`/history/${portfolio.id}`} className="flex-1">
                     <Button variant="outline" size="sm" className="w-full gap-2">
                       <Eye className="h-3 w-3" />
                       View

@@ -1,18 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui";
 import {
   Sparkles,
   Search,
   FileText,
   Download,
-  ArrowRight,
-  CheckCircle,
-  Zap,
   Globe,
   Palette,
+  Zap,
 } from "lucide-react";
 
 const features = [
@@ -55,30 +52,10 @@ const features = [
 ];
 
 const steps = [
-  {
-    number: "01",
-    title: "Paste Job Posting",
-    description:
-      "Copy the Upwork job posting URL or paste the job description directly.",
-  },
-  {
-    number: "02",
-    title: "AI Processing",
-    description:
-      "Our AI analyzes requirements, finds similar products, and captures screenshots.",
-  },
-  {
-    number: "03",
-    title: "Review & Edit",
-    description:
-      "Review generated content, make edits, and customize your portfolio.",
-  },
-  {
-    number: "04",
-    title: "Export PDF",
-    description:
-      "Download your professional PDF portfolio and apply with confidence.",
-  },
+  { number: "01", title: "Paste Job Posting", description: "Copy the Upwork job posting URL or paste the job description directly." },
+  { number: "02", title: "AI Processing", description: "Our AI analyzes requirements, finds similar products, and captures screenshots." },
+  { number: "03", title: "Review & Edit", description: "Review generated content, make edits, and customize your portfolio." },
+  { number: "04", title: "Export PDF", description: "Download your professional PDF portfolio and apply with confidence." },
 ];
 
 export default function LandingPage() {
@@ -93,14 +70,9 @@ export default function LandingPage() {
             </div>
             <span className="text-xl font-bold">Upfolio AI</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link href="/register">
-              <Button>Get Started</Button>
-            </Link>
-          </div>
+          <Link href="/generate">
+            <Button>Get Started</Button>
+          </Link>
         </div>
       </nav>
 
@@ -110,11 +82,7 @@ export default function LandingPage() {
           <div className="absolute left-1/2 top-0 -translate-x-1/2 translate-y-[-50%] h-[500px] w-[500px] rounded-full bg-primary/20 blur-[100px]" />
         </div>
         <div className="mx-auto max-w-5xl px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-4 py-1.5 text-sm text-muted-foreground">
               <Zap className="h-4 w-4 text-yellow-500" />
               <span>AI-Powered Portfolio Generator</span>
@@ -124,24 +92,16 @@ export default function LandingPage() {
               <br />
               <span className="gradient-text">Professional Portfolios</span>
             </h1>
-            <p className="mx-auto mb-10 max-w-2xl text-xl text-muted-foreground">
+            <p className="mx-auto mb-10 text-xl text-muted-foreground">
               Paste an Upwork job posting, get a tailored PDF portfolio with
               similar product showcases and AI-generated case studies.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/register">
-                <Button size="lg" className="gap-2">
-                  Create Portfolio
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button size="lg" variant="outline">
-                  View Demo
-                </Button>
+              <Link href="/generate">
+                <Button size="lg">Create Portfolio</Button>
               </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -149,31 +109,18 @@ export default function LandingPage() {
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              Everything You Need
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Build winning Upwork proposals in minutes, not hours
-            </p>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">Everything You Need</h2>
+            <p className="text-lg text-muted-foreground">Build winning Upwork proposals in minutes, not hours</p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="group rounded-lg border border-border bg-card p-6 transition-all duration-200 hover:border-primary/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.1)]"
-              >
+            {features.map((feature) => (
+              <div key={feature.title} className="group rounded-lg border border-border bg-card p-6 transition-all duration-200 hover:border-primary/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.1)]">
                 <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <feature.icon className="h-5 w-5" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {feature.description}
-                </p>
-              </motion.div>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -183,31 +130,16 @@ export default function LandingPage() {
       <section className="border-y border-border bg-secondary/30 py-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              How It Works
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Four simple steps to your perfect portfolio
-            </p>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">How It Works</h2>
+            <p className="text-lg text-muted-foreground">Four simple steps to your perfect portfolio</p>
           </div>
           <div className="grid gap-8 md:grid-cols-4">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.number}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.15 }}
-                viewport={{ once: true }}
-                className="relative text-center"
-              >
-                <div className="mb-4 text-6xl font-bold text-primary/20">
-                  {step.number}
-                </div>
+            {steps.map((step) => (
+              <div key={step.number} className="relative text-center">
+                <div className="mb-4 text-6xl font-bold text-primary/20">{step.number}</div>
                 <h3 className="mb-2 text-xl font-semibold">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {step.description}
-                </p>
-              </motion.div>
+                <p className="text-sm text-muted-foreground">{step.description}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -216,18 +148,10 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="py-20">
         <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="mb-6 text-3xl font-bold md:text-4xl">
-            Ready to Win More Jobs?
-          </h2>
-          <p className="mb-8 text-lg text-muted-foreground">
-            Join thousands of freelancers who use Upfolio AI to create
-            professional portfolios that win clients.
-          </p>
-          <Link href="/register">
-            <Button size="lg" className="gap-2">
-              Start Free Trial
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+          <h2 className="mb-6 text-3xl font-bold md:text-4xl">Ready to Win More Jobs?</h2>
+          <p className="mb-8 text-lg text-muted-foreground">Join thousands of freelancers who use Upfolio AI to create professional portfolios that win clients.</p>
+          <Link href="/generate">
+            <Button size="lg">Start Creating</Button>
           </Link>
         </div>
       </section>
@@ -242,23 +166,7 @@ export default function LandingPage() {
               </div>
               <span className="font-semibold">Upfolio AI</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © 2024 Upfolio AI. All rights reserved.
-            </p>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/privacy"
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                Privacy
-              </Link>
-              <Link
-                href="/terms"
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                Terms
-              </Link>
-            </div>
+            <p className="text-sm text-muted-foreground">© 2024 Upfolio AI. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { Input } from "@/components/ui";
@@ -16,13 +14,9 @@ import {
   CheckCircle,
   Loader2,
   Sparkles,
-  ArrowRight,
   Link as LinkIcon,
   FileText,
-  Image,
-  FileCheck,
-  Download,
-  RefreshCw,
+  ArrowLeft,
 } from "lucide-react";
 
 type Stage = "input" | "analyzing" | "searching" | "capturing" | "generating" | "composing" | "complete" | "error";
@@ -38,9 +32,6 @@ const stages: { key: Stage; label: string; progress: number }[] = [
 ];
 
 export default function GeneratePage() {
-  const { data: session } = useSession();
-  const router = useRouter();
-  
   const [inputMode, setInputMode] = useState<"url" | "text">("url");
   const [jobUrl, setJobUrl] = useState("");
   const [jobText, setJobText] = useState("");
@@ -62,10 +53,8 @@ export default function GeneratePage() {
     setCurrentStage("analyzing");
 
     try {
-      // Stage 1: Analyze the job
-      setCurrentStage("analyzing");
-      
-      const analysisRes = await fetch("/api/portfolios/generate", {
+      // Single API call to generate the full portfolio
+      const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -74,62 +63,17 @@ export default function GeneratePage() {
         }),
       });
 
-      if (!analysisRes.ok) {
-        throw new Error("Failed to analyze job posting");
-      }
-
-      const { portfolioId } = await analysisRes.json();
-
-      // Stage 2: Search for similar products
-      setCurrentStage("searching");
-      
-      const searchRes = await fetch(`/api/products/find?portfolioId=${portfolioId}`, {
-        method: "POST",
-      });
-
-      if (!searchRes.ok) {
-        throw new Error("Failed to find similar products");
-      }
-
-      // Stage 3: Capture screenshots
-      setCurrentStage("capturing");
-      
-      const captureRes = await fetch(`/api/screenshots/capture?portfolioId=${portfolioId}`, {
-        method: "POST",
-      });
-
-      if (!captureRes.ok) {
-        throw new Error("Failed to capture screenshots");
-      }
-
-      // Stage 4: Generate descriptions
-      setCurrentStage("generating");
-      
-      const generateRes = await fetch(`/api/descriptions/generate?portfolioId=${portfolioId}`, {
-        method: "POST",
-      });
-
-      if (!generateRes.ok) {
-        throw new Error("Failed to generate descriptions");
-      }
-
-      // Stage 5: Compose PDF
-      setCurrentStage("composing");
-      
-      const composeRes = await fetch(`/api/portfolios/${portfolioId}/compose`, {
-        method: "POST",
-      });
-
-      if (!composeRes.ok) {
-        throw new Error("Failed to compose PDF");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to generate portfolio");
       }
 
       // Complete!
       setCurrentStage("complete");
       setLoading(false);
       
-      // Redirect to portfolio view
-      router.push(`/portfolio/${portfolioId}`);
+      // Redirect to history
+      window.location.href = "/history";
       
     } catch (err) {
       console.error("Generation error:", err);
@@ -140,8 +84,14 @@ export default function GeneratePage() {
   }
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="min-h-screen p-6 lg:p-8">
       <div className="mx-auto max-w-3xl">
+        {/* Back link */}
+        <Link href="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Link>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold">Create Portfolio</h1>
@@ -249,7 +199,7 @@ export default function GeneratePage() {
             )}
           </CardContent>
           <CardFooter className="justify-end gap-2">
-            <Link href="/dashboard">
+            <Link href="/">
               <Button variant="outline">Cancel</Button>
             </Link>
             <Button onClick={handleGenerate} disabled={loading} className="gap-2">

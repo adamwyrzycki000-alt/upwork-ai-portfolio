@@ -104,12 +104,12 @@ export default function PortfolioDetailPage() {
               Created {new Date(portfolio.createdAt).toLocaleDateString()}
             </p>
           </div>
-          <div className="flex gap-2">
+          <a href={`/api/portfolios/${portfolio.id}/pdf`} target="_blank">
             <Button variant="outline" className="gap-2">
               <Download className="h-4 w-4" />
               Export PDF
             </Button>
-          </div>
+          </a>
         </div>
 
         <div className="mb-6">

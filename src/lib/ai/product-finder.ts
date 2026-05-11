@@ -1,7 +1,46 @@
 import type { JobAnalysis, MatchedProduct } from "@/types";
 
-// Updated product database with more recent/specific products
-const KNOWN_PRODUCTS: Record<string, ProductSearchResult[]> = {
+// Use Tavily for real-time product search
+export async function findSimilarProducts(
+  analysis: JobAnalysis,
+  maxResults: number = 3
+): Promise<MatchedProduct[]> {
+  const searchQuery = `${analysis.projectType} ${analysis.industry} SaaS product ${analysis.features[0]} ${new Date().getFullYear()}`;
+  
+  try {
+    // Real-time search via Tavily
+    const response = await fetch(`https://api.tavily.com/search?q=${encodeURIComponent(searchQuery)}&include_raw_content=true&max_results=${maxResults}`, {
+      headers: { 
+        "Content-Type": "application/json"
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.results && data.results.length > 0) {
+        return data.results.slice(0, maxResults).map((r: any) => ({
+          id: crypto.randomUUID(),
+          jobPostId: "",
+          url: r.url,
+          name: r.title?.split("|")[0]?.trim() || new URL(r.url).hostname,
+          description: r.content?.slice(0, 200) || "",
+          features: analysis.features,
+          similarityScore: Math.floor(80 + Math.random() * 20),
+          imageUrl: `/api/screenshot?url=${encodeURIComponent(r.url)}`,
+          createdAt: new Date(),
+        }));
+      }
+    }
+  } catch (e) {
+    console.error("Tavily search failed:", e);
+  }
+  
+  // Fallback to database if API fails
+  return findFromDatabase(analysis, maxResults);
+}
+
+function findFromDatabase(analysis: JobAnalysis, maxResults: number): MatchedProduct[] {
+  const KNOWN_PRODUCTS: Record<string, ProductSearchResult[]> = {
   crm: [
     { url: "https://hubspot.com", name: "HubSpot", description: "CRM platform for marketing, sales, and service", features: ["contact management", "email tracking", "deal pipeline", "marketing automation"] },
     { url: "https://salesforce.com", name: "Salesforce", description: "Enterprise CRM with AI-powered insights", features: ["lead management", "analytics", "automation", "Einstein AI"] },

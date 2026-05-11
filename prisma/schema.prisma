@@ -8,28 +8,29 @@ datasource db {
 }
 
 model JobPost {
-  id          String      @id @default(cuid())
-  userId      String      @default("demo-user")
-  content     String
-  url         String?
-  analysis    Json?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        String   @id @default(cuid())
+  userId    String   @default("demo-user")
+  content   String
+  url       String?
+  analysis  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   products    Product[]
   experiences Experience[]
   screenshots Screenshot[]
+  portfolio  Portfolio?
 }
 
 model Portfolio {
-  id          String   @id @default(cuid())
-  userId      String   @default("demo-user")
-  jobPostId   String
-  title       String
-  sections    Json     @default("[]")
-  status      String   @default("generating")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  jobPost     JobPost  @relation(fields: [jobPostId], references: [id])
+  id        String   @id @default(cuid())
+  userId    String   @default("demo-user")
+  jobPostId String   @unique
+  title    String
+  sections String   @default("[]")
+  status   String   @default("generating")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  jobPost  JobPost @relation(fields: [jobPostId], references: [id])
 }
 
 model Product {
@@ -38,7 +39,7 @@ model Product {
   name            String
   url             String
   description     String?
-  features       Json     @default("[]")
+  features       String   @default("[]")
   similarityScore Float?
   createdAt       DateTime @default(now())
   jobPost         JobPost  @relation(fields: [jobPostId], references: [id])
@@ -47,21 +48,21 @@ model Product {
 model Screenshot {
   id          String   @id @default(cuid())
   jobPostId   String
-  imageUrl   String
-  featureTags Json   @default("[]")
-  pageType   String?
-  createdAt  DateTime @default(now())
+  imageUrl    String
+  featureTags String   @default("[]")
+  pageType    String?
+  createdAt   DateTime @default(now())
   jobPost    JobPost  @relation(fields: [jobPostId], references: [id])
 }
 
 model Experience {
-  id                String   @id @default(cuid())
-  jobPostId          String
-  title             String
-  shortDescription  String?
-  mediumDescription String?
-  longDescription   String?
-  relatedFeature   String?
-  createdAt         DateTime  @default(now())
-  jobPost           JobPost  @relation(fields: [jobPostId], references: [id])
+  id                  String   @id @default(cuid())
+  jobPostId            String
+  title               String
+  shortDescription    String?
+  mediumDescription  String?
+  longDescription    String?
+  relatedFeature    String?
+  createdAt          DateTime  @default(now())
+  jobPost            JobPost  @relation(fields: [jobPostId], references: [id])
 }

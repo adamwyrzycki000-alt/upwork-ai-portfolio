@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { analyzeJobPost } from "@/lib/ai/job-analyzer";
 import { findSimilarProducts } from "@/lib/ai/product-finder";
-import { captureScreenshots } from "@/lib/ai/screenshot-engine";
 import { generateExperienceDescriptions } from "@/lib/ai/experience-writer";
 
 export async function POST(request: NextRequest) {
@@ -16,13 +15,13 @@ export async function POST(request: NextRequest) {
     // 1. Analyze the job posting
     const analysis = await analyzeJobPost(content);
 
-    // 2. Create job post
+    // 2. Create job post (save analysis as JSON string)
     const jobPost = await prisma.jobPost.create({
       data: {
         userId: "demo-user",
         content,
         url,
-        analysis: analysis as unknown as Record<string, unknown>,
+        analysis: JSON.stringify(analysis),
       },
     });
 
@@ -32,14 +31,13 @@ export async function POST(request: NextRequest) {
         userId: "demo-user",
         jobPostId: jobPost.id,
         title: `${analysis.projectType} - ${analysis.industry} Portfolio`,
-        sections: [],
       },
     });
 
     // 4. Find similar products
     const products = await findSimilarProducts(analysis, 3);
     
-    // Save products
+    // Save products (features as stringified JSON)
     for (const product of products) {
       await prisma.product.create({
         data: {
@@ -47,20 +45,19 @@ export async function POST(request: NextRequest) {
           name: product.name,
           url: product.url,
           description: product.description,
+          features: JSON.stringify(product.features),
           similarityScore: product.similarityScore,
-          features: product.features,
         },
       });
     }
 
-    // 5. Capture screenshots (mock for now - would need Playwright)
+    // 5. Create placeholder screenshots
     for (const product of products) {
       await prisma.screenshot.create({
         data: {
-          productId: product.name, // temp - needs proper relation
           jobPostId: jobPost.id,
-          imageUrl: `/placeholder/${product.name}.png`,
-          featureTags: product.features,
+          imageUrl: product.imageUrl || `/placeholder/${product.name.toLowerCase().replace(/\s/g, "")}.png`,
+          featureTags: JSON.stringify(product.features),
           pageType: "homepage",
         },
       });

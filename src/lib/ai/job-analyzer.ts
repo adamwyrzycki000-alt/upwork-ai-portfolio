@@ -1,88 +1,85 @@
-import OpenAI from "openai";
-import type { JobAnalysis, ProjectType } from "@/types";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY,
-});
-
-const projectTypeLabels: ProjectType[] = [
-  "saas",
-  "ai-tool",
-  "fintech",
-  "crm",
-  "marketplace",
-  "mobile-app",
-  "dashboard",
-  "automation",
-  "healthcare",
-  "ecommerce",
-  "other",
-];
+import type { JobAnalysis } from "@/types";
 
 export async function analyzeJobPost(content: string): Promise<JobAnalysis> {
-  const systemPrompt = `You are an expert job posting analyzer. Analyze the following Upwork job posting and extract structured information.
-
-Analyze the job posting and return a JSON object with these fields:
-- techStack: array of technologies mentioned (e.g., ["React", "TypeScript", "PostgreSQL"])
-- features: array of features requested (e.g., ["user authentication", "payment processing"])
-- industry: industry/domain (e.g., "fintech", "healthcare", "ecommerce")
-- keywords: important keywords from the job
-- complexity: "simple", "medium", or "complex" based on requirements
-- projectType: one of: ${projectTypeLabels.join(", ")}
-- uiuxRequirements: UI/UX requirements mentioned
-- seniority: expected seniority level ("junior", "mid", "senior", "principal")
-- platform: platform requirements (["web"], ["mobile"], ["backend"], ["web", "mobile"])
-
-Return ONLY valid JSON, no additional text.`;
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: content },
-    ],
-    temperature: 0.3,
-    max_tokens: 2000,
-    response_format: { type: "json_object" },
-  });
-
-  const analysis = JSON.parse(response.choices[0]?.message?.content || "{}");
-
+  const lower = content.toLowerCase();
+  
   return {
     id: crypto.randomUUID(),
-    techStack: analysis.techStack || [],
-    features: analysis.features || [],
-    industry: analysis.industry || "other",
-    keywords: analysis.keywords || [],
-    complexity: analysis.complexity || "medium",
-    projectType: analysis.projectType || "other",
-    uiuxRequirements: analysis.uiuxRequirements || [],
-    seniority: analysis.seniority || "mid",
-    platform: analysis.platform || ["web"],
+    techStack: extractTechStack(content),
+    features: extractFeatures(content),
+    industry: extractIndustry(lower),
+    keywords: [],
+    complexity: lower.includes("complex") || lower.includes("enterprise") ? "complex" : "medium",
+    projectType: extractProjectType(lower),
+    uiuxRequirements: [],
+    seniority: lower.includes("senior") ? "senior" : "mid",
+    platform: ["web"],
   };
 }
 
-export async function generateSearchQueries(
-  analysis: JobAnalysis
-): Promise<string[]> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content:
-          "Generate 5-10 search queries to find similar live products/websites. Each query should be concise and specific. Return ONLY a JSON array of strings.",
-      },
-      {
-        role: "user",
-        content: `Generate search queries for: ${analysis.projectType} ${analysis.industry} with features: ${analysis.features.join(", ")}. Tech stack: ${analysis.techStack.join(", ")}`,
-      },
-    ],
-    temperature: 0.7,
-    max_tokens: 500,
-    response_format: { type: "json_object" },
-  });
+function extractTechStack(content: string): string[] {
+  const stack: string[] = [];
+  const patterns = [
+    [/react/gi, "React"], [/vue/gi, "Vue"], [/angular/gi, "Angular"], 
+    [/node\.js/gi, "Node.js"], [/python/gi, "Python"], [/django/gi, "Django"], 
+    [/flask/gi, "Flask"], [/typescript/gi, "TypeScript"], 
+    [/javascript/gi, "JavaScript"], [/php/gi, "PHP"], 
+    [/laravel/gi, "Laravel"], [/ruby/gi, "Ruby"], 
+    [/rails/gi, "Rails"], [/go/gi, "Go"], [/rust/gi, "Rust"],
+    [/java/gi, "Java"], [/spring/gi, "Spring"], 
+    [/next\.js/gi, "Next.js"], [/express/gi, "Express"],
+    [/fastapi/gi, "FastAPI"], [/postgresql/gi, "PostgreSQL"],
+    [/mysql/gi, "MySQL"], [/mongodb/gi, "MongoDB"],
+    [/redis/gi, "Redis"], [/tailwind/gi, "Tailwind CSS"],
+  ];
+  
+  for (const [regex, name] of patterns) {
+    if (regex.test(content) && !stack.includes(name)) {
+      stack.push(name);
+    }
+  }
+  
+  return stack.length ? stack : ["React", "TypeScript", "Node.js"];
+}
 
-  const result = JSON.parse(response.choices[0]?.message?.content || "[]");
-  return Array.isArray(result) ? result : result.queries || [];
+function extractFeatures(content: string): string[] {
+  const features: string[] = [];
+  const patterns = [
+    [/auth|login|signin/gi, "user authentication"],
+    [/dashboard/gi, "dashboard"],
+    [/api|rest/gi, "REST API"],
+    [/database|db/gi, "database"],
+    [/payment|stripe/gi, "payment processing"],
+    [/chat|message/gi, "chat"],
+    [/analytics|chart/gi, "analytics"],
+    [/admin/gi, "admin panel"],
+    [/cms/gi, "CMS"],
+    [/mobile|ios|android/gi, "mobile"],
+    [/ai|ml|machine learning/gi, "AI/ML"],
+  ];
+  
+  for (const [regex, name] of patterns) {
+    if (regex.test(content) && !features.includes(name)) {
+      features.push(name);
+    }
+  }
+  
+  return features.length ? features : ["user authentication", "database", "REST API"];
+}
+
+function extractIndustry(lower: string): string {
+  if (lower.includes("crm") || lower.includes("sales")) return "crm";
+  if (lower.includes("fintech") || lower.includes("payment")) return "fintech";
+  if (lower.includes("ecommerce") || lower.includes("shop")) return "ecommerce";
+  if (lower.includes("health") || lower.includes("medical")) return "healthcare";
+  if (lower.includes("ai") || lower.includes("ml")) return "ai";
+  return "saas";
+}
+
+function extractProjectType(lower: string): string {
+  if (lower.includes("mobile") || lower.includes("ios")) return "mobile-app";
+  if (lower.includes("crm")) return "crm";
+  if (lower.includes("ecommerce")) return "ecommerce";
+  if (lower.includes("dashboard")) return "dashboard";
+  return "saas";
 }

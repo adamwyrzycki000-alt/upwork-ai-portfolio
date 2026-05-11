@@ -14,6 +14,8 @@ export async function GET(
         jobPost: {
           include: {
             products: true,
+            screenshots: true,
+            experiences: true,
           },
         },
       },
